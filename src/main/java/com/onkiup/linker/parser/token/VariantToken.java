@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.onkiup.linker.parser.NonParseable;
 import com.onkiup.linker.parser.ParserContext;
 import com.onkiup.linker.parser.ParserLocation;
 import com.onkiup.linker.parser.Rule;
@@ -72,7 +73,7 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
             log("Ignoring variant {} -- marked with @IgnoreVariant", type.getSimpleName());
             return false;
           }
-          if (type instanceof NonParseable) {
+          if (NonParseable.class.isInstance(type)) {
             log("Ignoring non-parseable variant {}", type.getSimpleName());
             return false;
           }

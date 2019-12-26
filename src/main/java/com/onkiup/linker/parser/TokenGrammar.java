@@ -21,6 +21,7 @@ import com.onkiup.linker.parser.token.PartialToken;
 import com.onkiup.linker.parser.util.LoggerLayout;
 import com.onkiup.linker.parser.util.ParserError;
 import com.onkiup.linker.parser.util.SelfPopulatingBuffer;
+import com.onkiup.linker.util.TypeUtils;
 
 /**
  * Main class for parsing.
@@ -59,11 +60,13 @@ public class TokenGrammar<X extends Rule> {
   }
 
   /**
+   * @deprecated 
+   * @see TypeUtils#isConcrete(Class)
    * @param test Type to test
    * @return true if the type is not abstract
    */
   public static boolean isConcrete(Class<?> test) {
-    return !(test.isInterface() || Modifier.isAbstract(test.getModifiers()));
+    return TypeUtils.isConcrete(test);
   }
 
   /**

@@ -35,6 +35,7 @@ repositories {
 // In this section you declare the dependencies for your production and test code
 dependencies {
   compile "com.onkiup:linker-parser-api:${project.version}"
+  compile "com.onkiup:linker-utils:${project.version}"
 
   // The production code uses the SLF4J logging API at compile time
   compileOnly group: 'org.slf4j', name: 'slf4j-api', version: '1.7.28'
