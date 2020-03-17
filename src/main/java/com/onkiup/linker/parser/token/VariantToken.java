@@ -6,10 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import com.onkiup.linker.parser.NonParseable;
 import com.onkiup.linker.parser.ParserContext;
 import com.onkiup.linker.parser.ParserLocation;
@@ -21,18 +21,30 @@ import com.onkiup.linker.parser.annotation.IgnoreCharacters;
 import com.onkiup.linker.parser.annotation.IgnoreVariant;
 import com.onkiup.linker.parser.util.ParserError;
 
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
+
 /**
- * A PartialToken used to resolve grammar junctions (non-concrete rule classes like interfaces and abstract classes)
- * by iteratively testing each junction variant (concrete non-abstract implementations) until one of them matches parser input
- * This class is crucial to parser's performance as it implements some key optimizations:
- *  -- it prevents parser from ascending to left-recursive tokens before non left-recursive tokens by penalizing the former's priorities
- *  -- it prevents parser from testing left-recursive tokens if same token with same input offset (position) is already in current AST path
- *  -- it dynamically adjusts junction variant priorities during matching based on how frequently junction variants fail or match, making sure that
- *      more frequently matched tokens are tested before more rare tokens
- *  -- it performs basic lexing on parser input by tagging positions in parser buffer as compatible/incompatible. This information becomes crucial
- *      to parser performance by allowing it to skip previously tested and failed grammar paths after following a non-matching grammar "dead end" paths
+ * A PartialToken used to resolve grammar junctions (non-concrete rule classes
+ * like interfaces and abstract classes) by iteratively testing each junction
+ * variant (concrete non-abstract implementations) until one of them matches
+ * parser input This class is crucial to parser's performance as it implements
+ * some key optimizations: -- it prevents parser from ascending to
+ * left-recursive tokens before non left-recursive tokens by penalizing the
+ * former's priorities -- it prevents parser from testing left-recursive tokens
+ * if same token with same input offset (position) is already in current AST
+ * path -- it dynamically adjusts junction variant priorities during matching
+ * based on how frequently junction variants fail or match, making sure that
+ * more frequently matched tokens are tested before more rare tokens -- it
+ * performs basic lexing on parser input by tagging positions in parser buffer
+ * as compatible/incompatible. This information becomes crucial to parser
+ * performance by allowing it to skip previously tested and failed grammar paths
+ * after following a non-matching grammar "dead end" paths
  *
  *  This class can be additionally optimized by implementing concurrent grammar junction testing
+ *
  * @param <X> the grammar junction class to be resolved
  */
 public class VariantToken<X extends Rule> extends AbstractToken<X> implements CompoundToken<X>, Serializable {
@@ -81,30 +93,20 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
             log("Ignoring variant {} -- left recursive", type.getSimpleName());
             return false;
           }
-          if (excludeMatchingParents) {
-            boolean inTree = findInPath(token -> token != null && token.tokenType() == type &&
-                token.location().position() == location.position()).isPresent();
-            if (inTree) {
-              log("Ignoring variant {} -- already in tree with same position ({})", type.getSimpleName(),
-                  location.position());
-              return false;
-            }
-          }
 
-          Boolean tagged = getTag(type).orElse(null);
-          if (tagged != null && !tagged) {
-            log("Ignoring " + type + " (tagged as failed for this position)");
-            return false;
-          }
-          return true;
-        })
-        .sorted((sub1, sub2) -> {
-          if (!typePriorities.containsKey(sub1)) {
-            typePriorities.put(sub1, calculatePriority(sub1));
-          }
-          if (!typePriorities.containsKey(sub2)) {
-            typePriorities.put(sub2, calculatePriority(sub2));
-          }
+        Boolean tagged = getTag(type).orElse(null);
+        if (tagged != null && !tagged) {
+          log("Ignoring " + type + " (tagged as failed for this position)");
+          return false;
+        }
+        return true;
+      }).sorted((sub1, sub2) -> {
+        if (!typePriorities.containsKey(sub1)) {
+          typePriorities.put(sub1, calculatePriority(sub1));
+        }
+        if (!typePriorities.containsKey(sub2)) {
+          typePriorities.put(sub2, calculatePriority(sub2));
+        }
 
           int result = Integer.compare(typePriorities.get(sub1), typePriorities.get(sub2));
           if (result == 0) {
@@ -137,7 +139,8 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
   @Override
   public Optional<PartialToken<?>> nextChild() {
     if (nextVariant >= variants.length) {
-      log("Unable to return next child: variants exhausted (nextVariant = {}, variants total = {})", nextVariant, variants.length);
+      log("Unable to return next child: variants exhausted (nextVariant = {}, variants total = {})", nextVariant,
+          variants.length);
       onFail();
       return Optional.empty();
     }
@@ -168,7 +171,7 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
     if (nextVariant >= values.length) {
       return new PartialToken[0];
     }
-    return new PartialToken[] {values[currentChild()]};
+    return new PartialToken[] { values[currentChild()] };
   }
 
   @Override
@@ -184,7 +187,7 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
       throw new ParserError("No current token but onChildToken was called...", this);
     }
     if (TokenGrammar.isConcrete(variants[current])) {
-      storeTag(values[current],true);
+      storeTag(values[current], true);
     }
     if (values[current].isMetaToken()) {
       log("Metatoken detected");
@@ -241,7 +244,7 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
     int current = currentChild();
     updateDynPriority(variants[current], 30);
     if (TokenGrammar.isConcrete(variants[current])) {
-      storeTag(values[current],false);
+      storeTag(values[current], false);
     }
     if (nextVariant >= variants.length) {
       onFail();
@@ -253,7 +256,7 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
   @Override
   public Optional<X> token() {
     if (result != null) {
-      return (Optional<X>)result.token();
+      return (Optional<X>) result.token();
     }
     int current = currentChild();
     if (values[current] == null) {
@@ -287,7 +290,7 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
       if (token != null) {
         token.traceback();
         dropPopulated();
-        if (token.alternativesLeft()){
+        if (token.alternativesLeft()) {
           nextVariant = i;
           break;
         }
@@ -359,17 +362,8 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
   @Override
   public String toString() {
     ParserLocation location = location();
-    return String.format(
-        "%50.50s || %s (%d/%d) (%d:%d -- %d - %d)",
-        head(50),
-        tag(),
-        nextVariant,
-        variants.length,
-        location.line(),
-        location.column(),
-        location.position(),
-        end().position()
-    );
+    return String.format("%50.50s || %s (%d/%d) (%d:%d -- %d - %d)", head(50), tag(), nextVariant, variants.length,
+        location.line(), location.column(), location.position(), end().position());
   }
 
   @Override
@@ -457,14 +451,15 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
   }
 
   @Override
-  public CharSequence dumpTree(int offset, CharSequence prefix, CharSequence childPrefix, Function<PartialToken<?>, CharSequence> formatter) {
+  public CharSequence dumpTree(int offset, CharSequence prefix, CharSequence childPrefix,
+      Function<PartialToken<?>, CharSequence> formatter) {
     final int childOffset = offset + 1;
     String insideFormat = "%s ├─%s %s: %s";
     String lastFormat = "%s └─%s %s: %s";
     StringBuilder result = new StringBuilder(super.dumpTree(offset, prefix, childPrefix, formatter));
     for (int i = 0; i <= nextVariant; i++) {
       if (i < variants.length) {
-        boolean last = i == variants.length - 1 || i == nextVariant || (values[i+1] == null && i == nextVariant - 1);
+        boolean last = i == variants.length - 1 || i == nextVariant || (values[i + 1] == null && i == nextVariant - 1);
         String format = last ? lastFormat : insideFormat;
         PartialToken<? extends X> child = values[i];
         String variantName = variants[i].getSimpleName();
@@ -476,11 +471,14 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
             continue;
           }
         } else if (child != null && child.isFailed() && !isPopulated()) {
-          result.append(child.dumpTree(childOffset, String.format(format, childPrefix, "[F]", variantName, ""), childPrefix + (last ? "  " : " │"),  formatter));
-        } else if (child != null &&  child.isPopulated()) {
-          result.append(child.dumpTree(childOffset, String.format(format, childPrefix, "[+]", variantName, ""), childPrefix + (last ? "  " : " │"),  formatter));
+          result.append(child.dumpTree(childOffset, String.format(format, childPrefix, "[F]", variantName, ""),
+              childPrefix + (last ? "  " : " │"), formatter));
+        } else if (child != null && child.isPopulated()) {
+          result.append(child.dumpTree(childOffset, String.format(format, childPrefix, "[+]", variantName, ""),
+              childPrefix + (last ? "  " : " │"), formatter));
         } else if (child != null) {
-          result.append(child.dumpTree(childOffset, String.format(format, childPrefix, ">>>", variantName, ""), childPrefix + (last ? "  " : " │"),  formatter));
+          result.append(child.dumpTree(childOffset, String.format(format, childPrefix, ">>>", variantName, ""),
+              childPrefix + (last ? "  " : " │"), formatter));
         }
       }
     }
@@ -497,4 +495,3 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
     return Optional.of(values[currentChild()]);
   }
 }
-

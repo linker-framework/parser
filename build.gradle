@@ -86,6 +86,7 @@ uploadArchives {
     mavenDeployer {
       beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
+/**
       repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
         authentication(userName: nexusUsername, password: nexusPassword)
       }
@@ -93,6 +94,7 @@ uploadArchives {
       snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
         authentication(userName: nexusUsername, password: nexusPassword)
       }
+      */
 
       pom.project {
         name 'Linker-Parser'

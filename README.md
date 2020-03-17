@@ -1,8 +1,29 @@
-# linker-parser: JavaCC on steroids.
+# ![Linkin park logo](https://raw.githubusercontent.com/wiki/chedim/linker-parser/logo.png) Linker-parser: JavaCC on steroids.
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.onkiup/linker-parser/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.onkiup/linker-parser)
+
 Linker-parser is a FSM-backed non-recursive top-down LL(k) parser that uses Java language to define grammar rules. In other words, it accepts Java classes as grammar definitions and instantiates objects from these classes using text it parses as a template.
 
 ## But... Why?
 I started this project out of frustration of working with javacc (*Java* *C*ompiler *C*ompiler), which was created decades ago and is very complicated to use. I also didn't want to deal with BNF notations as Java can be used to describe grammars on itself and I love Java :)
+
+## Using in your projects
+1. Make sure that your project has `maven-central` configured as artifact source 
+2. For Gradle projects, add the following to your `build.gradle`: 
+   ```gradle
+   compile group: 'com.onkiup', name: 'linker-parser', version: '0.8'
+   ```
+   For Maven projects, add the following to your `pom.xml`:
+   ```xml
+   <dependency>
+       <groupId>com.onkiup</groupId>
+       <artifactId>linker-parser</artifactId>
+       <version>0.8</version>
+   </dependency>
+   ```
+
+## Quickstart guide
+Some basic examples are provided in this README file. More information is available in the [Quickstart Guide](https://github.com/chedim/linker-parser/wiki) in project's wiki.
 
 ## Creating a grammar rule
 Linker-parser grammar rules are defined as Java classes using a set of simple conventions:
@@ -99,6 +120,9 @@ This allows based on Linker-parser evaluators calculate results of mathematical 
 For any questions or issues -- please either open a github issue in this project or tweet directly at [chedim](http://twitter.com/chedim) and I will do my best to help you. It would help me a lot if you include definitions for your failing rules in the message ;-)
 
 ## Version History
+* 0.8
+  - Major refactoring
+  - Multiple optimizations implemented for `VariantToken`s
 * 0.7.1
   - Various bugfixes and enhancements
   - IgnoreCharacters.inherit now will be false by default
