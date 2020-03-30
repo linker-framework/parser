@@ -11,15 +11,16 @@ import java.util.function.Function;
 
 import com.onkiup.linker.parser.ParserLocation;
 import com.onkiup.linker.parser.Rule;
+import com.onkiup.linker.parser.TokenFactory;
 import com.onkiup.linker.parser.annotation.IgnoreCharacters;
-import com.onkiup.linker.parser.util.LoggerLayout;
 import com.onkiup.linker.parser.util.Utils;
+import com.onkiup.linker.util.LoggerLayout;
 
 /**
  * PartialToken used to populate concrete Rule instances
  * @param <X>
  */
-public class RuleToken<X extends Rule> extends AbstractToken<X> implements CompoundToken<X>, Rotatable, Serializable {
+public class RuleToken<X extends Rule> extends AbstractToken<X> implements ParentToken<X>, Rotatable, Serializable {
   private X token;
   private Class<X> tokenType;
   private Field[] fields;
@@ -101,7 +102,7 @@ public class RuleToken<X extends Rule> extends AbstractToken<X> implements Compo
     if (values[nextChild] == null || values[nextChild].isFailed() || values[nextChild].isPopulated()) {
       Field childField = fields[nextChild];
       log("Creating partial token for child#{} at position {}", nextChild, lastTokenEnd.position());
-      values[nextChild] = PartialToken.forField(this, nextChild  , childField, lastTokenEnd);
+      values[nextChild] = TokenFactory.forField(this, nextChild  , childField, lastTokenEnd);
     }
     log("nextChild#{} = {}", nextChild, values[nextChild].tag());
     return Optional.of(values[nextChild++]);
@@ -219,7 +220,7 @@ public class RuleToken<X extends Rule> extends AbstractToken<X> implements Compo
   public void atEnd() {
     log("Trying to force-populate...");
     for (int i = Math.max(0, nextChild - 1); i < fields.length; i++) {
-      if (!PartialToken.isOptional(this, fields[i])) {
+      if (!TokenFactory.isOptional(this, fields[i])) {
         if (values[i] == null || !values[i].isPopulated()) {
           onFail();
           return;

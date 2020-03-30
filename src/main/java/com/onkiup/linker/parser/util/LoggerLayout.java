@@ -1,4 +1,4 @@
-package com.onkiup.linker.parser.util;
+package com.onkiup.linker.util;
 
 import java.util.function.Supplier;
 import java.util.stream.Collectors;

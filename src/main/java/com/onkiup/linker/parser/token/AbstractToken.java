@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.onkiup.linker.parser.ParserLocation;
+import com.onkiup.linker.parser.TokenFactory;
 
 /**
  * Common implementation for PartialTokens
@@ -198,7 +199,7 @@ public abstract class AbstractToken<X> implements PartialToken<X>, Serializable 
    */
   protected void readFlags(Field field) {
     optionalCondition = PartialToken.getOptionalCondition(field).orElse(null);
-    optional = optionalCondition == null && PartialToken.hasOptionalAnnotation(field);
+    optional = optionalCondition == null && TokenFactory.hasOptionalAnnotation(field);
   }
 
   /**

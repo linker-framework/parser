@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.rmi.CORBA.Util;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.onkiup.linker.parser.ParserLocation;
 import com.onkiup.linker.parser.PatternMatcher;

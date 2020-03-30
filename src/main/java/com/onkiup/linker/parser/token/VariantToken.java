@@ -6,25 +6,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import com.onkiup.linker.parser.NonParseable;
 import com.onkiup.linker.parser.ParserContext;
 import com.onkiup.linker.parser.ParserLocation;
 import com.onkiup.linker.parser.Rule;
+import com.onkiup.linker.parser.TokenFactory;
 import com.onkiup.linker.parser.TokenGrammar;
 import com.onkiup.linker.parser.annotation.AdjustPriority;
 import com.onkiup.linker.parser.annotation.Alternatives;
 import com.onkiup.linker.parser.annotation.IgnoreCharacters;
 import com.onkiup.linker.parser.annotation.IgnoreVariant;
 import com.onkiup.linker.parser.util.ParserError;
-
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 
 /**
  * A PartialToken used to resolve grammar junctions (non-concrete rule classes
@@ -159,7 +155,7 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
       log("Creating partial token for nextChild#{}", nextVariant);
       updateDynPriority(variants[nextVariant], 10);
       tried.add(variants[nextVariant]);
-      values[nextVariant] = PartialToken.forField(this, nextVariant, targetField().orElse(null), variants[nextVariant], location());
+      values[nextVariant] = TokenFactory.forField(this, nextVariant, targetField().orElse(null), variants[nextVariant], location());
     }
 
     log("nextChild#{} = {}", nextVariant, values[nextVariant].tag());

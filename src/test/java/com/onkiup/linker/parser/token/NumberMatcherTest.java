@@ -92,8 +92,8 @@ public class NumberMatcherTest {
     assertTrue(subject.apply("1").isMatchContinue());
 
     assertTrue(subject.apply("19.9 ").isMatch());
-    assertEquals(new BigInteger("199"), subject.apply("199i").getToken());
-    assertEquals(new BigInteger("-199"), subject.apply("-199i").getToken());
+    assertEquals(new BigDecimal("199"), subject.apply("199i").getToken());
+    assertEquals(new BigDecimal("-199"), subject.apply("-199i").getToken());
     assertEquals(3, subject.apply("199i").getTokenLength());
   }
 }

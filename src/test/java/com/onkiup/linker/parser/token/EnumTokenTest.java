@@ -29,8 +29,7 @@ public class EnumTokenTest {
   public void baseCases() throws Exception {
     CompoundToken parent = Mockito.mock(CompoundToken.class);
     ConsumingToken.ConsumptionState.rootBuffer(parent, "");
-    EnumToken<TestEnum> subject = new EnumToken<TestEnum>(parent, getClass().getDeclaredField("targetField"), TestEnum.class  ,
-        ParserLocation.ZERO);
+    EnumToken<TestEnum> subject = new EnumToken<TestEnum>(parent, 0, getClass().getDeclaredField("targetField"), TestEnum.class, ParserLocation.ZERO);
 
     Function<CharSequence,TokenTestResult> matcher = subject.tokenMatcher();
 

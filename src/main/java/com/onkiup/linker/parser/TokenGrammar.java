@@ -3,25 +3,24 @@ package com.onkiup.linker.parser;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import com.onkiup.linker.parser.token.CompoundToken;
+import com.onkiup.linker.parser.token.ConsumingToken;
+import com.onkiup.linker.parser.token.PartialToken;
+import com.onkiup.linker.parser.util.ParserError;
+import com.onkiup.linker.parser.util.SelfPopulatingBuffer;
+import com.onkiup.linker.util.LoggerLayout;
+import com.onkiup.linker.util.TypeUtils;
+
 import org.apache.log4j.Appender;
 import org.apache.log4j.Layout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.onkiup.linker.parser.token.CompoundToken;
-import com.onkiup.linker.parser.token.ConsumingToken;
-import com.onkiup.linker.parser.token.PartialToken;
-import com.onkiup.linker.parser.util.LoggerLayout;
-import com.onkiup.linker.parser.util.ParserError;
-import com.onkiup.linker.parser.util.SelfPopulatingBuffer;
-import com.onkiup.linker.util.TypeUtils;
 
 /**
  * Main class for parsing.
@@ -167,7 +166,7 @@ public class TokenGrammar<X extends Rule> {
       throw new RuntimeException("Failed to read source " + sourceName, e);
     }
     try {
-      CompoundToken<X> rootToken = CompoundToken.forClass(type, 0, new ParserLocation(sourceName, 0, 0, 0));
+      CompoundToken<X> rootToken = TokenFactory.forClass(type, 0, new ParserLocation(sourceName, 0, 0, 0));
       ConsumingToken.ConsumptionState.rootBuffer(rootToken, buffer);
       CompoundToken parent = rootToken;
       ConsumingToken<?> consumer = nextConsumingToken(parent).orElseThrow(() -> new ParserError("No possible consuming tokens found", parent));
@@ -492,5 +491,37 @@ public class TokenGrammar<X extends Rule> {
     return Arrays.stream(aClass.getInterfaces())
         .anyMatch(Rule.class::equals);
   }
+
+public static Logger getLogger() {
+	return logger;
+}
+
+public static ThreadLocal<StringBuilder> getBuffer() {
+	return BUFFER;
+}
+
+public Class<X> getType() {
+	return type;
+}
+
+public void setType(Class<X> type) {
+	this.type = type;
+}
+
+public Class getMetaType() {
+	return metaType;
+}
+
+public void setMetaType(Class metaType) {
+	this.metaType = metaType;
+}
+
+public String getIgnoreTrail() {
+	return ignoreTrail;
+}
+
+public void setIgnoreTrail(String ignoreTrail) {
+	this.ignoreTrail = ignoreTrail;
+}
 }
 

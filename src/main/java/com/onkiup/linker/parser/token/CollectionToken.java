@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import com.onkiup.linker.parser.ParserLocation;
+import com.onkiup.linker.parser.TokenFactory;
 import com.onkiup.linker.parser.annotation.CaptureLimit;
 import com.onkiup.linker.parser.util.ParserError;
 
@@ -186,7 +187,7 @@ public class CollectionToken<X> extends AbstractToken<X> implements CompoundToke
     if (captureLimit == null || captureLimit.max() > children.size()) {
       if (nextMember == children.size()) {
         log("creating partial token for member#{}", children.size());
-        current = PartialToken.forField(this, children.size(), targetField().orElse(null), memberType, lastTokenEnd);
+        current = TokenFactory.forField(this, children.size(), targetField().orElse(null), memberType, lastTokenEnd);
         children.add(current);
       } else if (nextMember < children.size()) {
         current = children.get(nextMember);
