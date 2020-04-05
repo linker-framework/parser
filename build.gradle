@@ -29,6 +29,7 @@ repositories {
     // Use 'jcenter' for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+    mavenCentral()
     mavenLocal()
 }
 
@@ -38,8 +39,8 @@ dependencies {
   api "com.onkiup:linker-utils:${project.version}"
 
   // The production code uses the SLF4J logging API at compile time
-  implementation group: 'org.slf5j', name: 'slf4j-api', version: '1.7.28'
-  implementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.28'
+  implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+  implementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30'
   // https://mvnrepository.com/artifact/org.reflections/reflections
   implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
   implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.12.1'
@@ -49,7 +50,7 @@ dependencies {
   // TestNG is also supported by the Gradle Test task. Just change the
   // testCompile dependency to testCompile 'org.testng:testng:6.8.1' and add
   // 'test.useTestNG()' to your build script.
-  tzestCompile 'junit:junit:4.12'
+  testCompile 'junit:junit:4.12'
   testCompile group: 'org.mockito', name: 'mockito-core', version: '3.0.0'
   testCompile group: 'org.powermock', name: 'powermock-module-junit4', version: '2.0.2'
   testCompile group: 'org.powermock', name: 'powermock-api-mockito2', version: '2.0.2'
