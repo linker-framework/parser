@@ -493,7 +493,7 @@ public class VariantToken<X extends Rule> extends AbstractToken<X> implements Co
 
   private static Reflections reflections(Class from) {
     if (!reflectionsCache.containsKey(from.getPackage())) {
-      Reflections reflections = new Reflections(from.getPackageName(), new SubTypesScanner());
+      Reflections reflections = new Reflections(from.getPackage(), new SubTypesScanner());
       reflectionsCache.put(from.getPackage(), reflections);
     }
 
